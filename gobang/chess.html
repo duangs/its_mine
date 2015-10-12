@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Gobang</title>
+	<style type="text/css" media="screen">
+		html,body { width:100%; height: 100%; padding: 0; margin: 0; font-family:微软雅黑,Arial,Times New Roman; }
+		.button { color: #666; background-color: #EEE; border-color: #EEE; font-weight: 300; font-size: 16px; font-family: "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; text-decoration: none; text-align: center; line-height: 40px; height: 40px; padding: 0 40px; margin: 0; display: inline-block; appearance: none; cursor: pointer; border: none; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; -webkit-transition-property: all; transition-property: all; -webkit-transition-duration: .3s; transition-duration: .3s; }
+		.button-raised { border-color: #e1e1e1; border-style: solid; border-width: 1px; line-height: 38px; background: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#e1e1e1)); background: linear-gradient(#f6f6f6, #e1e1e1); -webkit-box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.15); box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.15); }
+		.button-pill { border-radius: 200px; }
+		.button-raised:active, .button-raised.active, .button-raised.is-active { background: #eeeeee; -webkit-box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2), 0px 1px 0px white; box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2), 0px 1px 0px white; }
+		.button-raised:hover, .button-raised:focus { background: -webkit-gradient(linear, left top, left bottom, from(white), to(gainsboro)); background: linear-gradient(top, white, gainsboro); }
+		.button:active, .button.active, .button.is-active { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3); text-decoration: none; background-color: #eeeeee; border-color: #cfcfcf; color: #d4d4d4; -webkit-transition-duration: 0s; transition-duration: 0s; -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2); }
+		.button:hover, .button:focus { background-color: #f6f6f6; text-decoration: none; outline: none; }
+		#C { display: inline-block; margin: 50px; position: relative; padding: 20px 120px 20px 20px; background-color: #C89C5C; }
+		#C .man { display: inline-block; width: 40px; height: 40px; display: block; -webkit-border-radius: 20px; -moz-border-radius: 20px; border-radius: 20px; -moz-box-shadow: inset 0 0 10px rgba(0,0,0,1); box-shadow: inset 0 0 18px rgba(0,0,0,1); }
+		#C .man.while { 
+			/*background: -webkit-gradient(radial, 50 40, 30, center center, 80, from(#FFF), to(rgba(255,255,255,1)));
+			background: -moz-radial-gradient();*/
+
+			background-image: -webkit-radial-gradient(center,#fff 0%, #fff 100%);  
+			background-image: -moz-radial-gradient(center,#fff 0%, #fff 100%); 
+			background-image: -o-radial-gradient(center,#fff 0%, #fff 100%); 
+			background-image: -ms-radial-gradient(center,#fff 0%, #fff 100%);
+			background-image: radial-gradient(center,#fff 0%, #fff 100%);
+		}
+		#C .man.black { 
+			/*background: -webkit-gradient(radial, 50 40, 30, center center, 80, from(#000), to(rgba(255,255,255,1))); */
+			background-image: -webkit-radial-gradient(center,#000 62%, #fff 72%);  
+			background-image: -moz-radial-gradient(center,#000 62%, #fff 72%); 
+			background-image: -o-radial-gradient(center,#000 62%, #fff 72%); 
+			background-image: -ms-radial-gradient(center,#000 62%, #fff 72%);  
+			background-image: radial-gradient(center,#000 62%, #fff 72%);
+		}
+		#C table { border-collapse: collapse; margin: 20px; }
+		#C table tr td{ width: 40px; height: 40px; border: 1px solid #43341E; padding: 0; box-sizing: border-box; }
+		#C table tr:last-child td>div:nth-child(2){ top: 20px; left: -20px; }
+		#C table tr:last-child td>div:nth-child(3){ top: -20px; left: 20px; }
+		#C table tr:last-child td>div:nth-child(4){ top: 20px; left: 20px; }
+		#C #big_box{ position: absolute; top: 20px; left: 20px; }
+		#C #big_box>div.row{ height: 40px; }
+		#C #big_box>div.row>div.cell { display: inline-block; width: 40px; height: 40px; background-color: transparent; box-sizing: border-box; }
+		#C #big_box>div.row>div.cell.active { border: 1px solid #666; }
+		#C #toolbar{ width: 100px; height: 100%; position: absolute; right: 0; top: 0; }
+		#C button#btn-undo { padding: 0 10px; height: 25px; line-height: 25px; margin-top: 10px; font-size: .8em; }
+		#C #game { margin-top: 50px; }
+		#C #game .man { width: 20px; height: 20px; box-shadow: inset 0 0 9px rgba(0,0,0,1); margin: 5px 0; display: inline-block; }
+		#C #game span { width: 70px; height: 20px; display: inline-block; line-height: 20px; vertical-align: top; padding: 5px; font-size: .8em; }
+		#C #wait-match { width: 100%; height: 100%; position: absolute; background-color: rgba(255,255,255,0.7); top: 0; left: 0; text-align: center; line-height: 15em; text-shadow: 0px 0px 2px #f00; }
+	</style>	
+	<script type="text/javascript">
+		function Chess(){
+			var _this = this;
+			this.ws;
+			this.BoxDom;
+			this.curr_man;
+			this.size;
+			this.all_man;
+			this.undo_count = 5;
+			this.curr_step_man;
+			this.init = function(size,ws){
+				console.log('init');
+				if(ws == null){
+					console.log('undefined WebSocket');
+					return ;
+				}
+				this.ws = ws;
+				this.size = size ? size : 10;
+				this.BoxDom = document.getElementById('C');
+				this.all_man = [];
+				// this.undo_count = 5;
+				// this.curr_man = 1;
+				this.createTeable(size);
+				this.createManBox(size);
+				this.createToolbar();
+			}
+			this.setManColor = function(color){
+				this.curr_man = color ? color : 1;
+			}
+			this.createTeable = function(size){
+				console.log('create table');
+				var table = document.createElement('table');
+				for(var r=1;r<=size;r++){
+					var tr = document.createElement('tr');
+					for(var c=1;c<=size;c++){
+						var td = document.createElement('td');
+						tr.appendChild(td);
+					}
+					table.appendChild(tr);
+				}
+				table.style.width = size*40+'px';
+				this.BoxDom.appendChild(table);
+			}
+			this.createManBox = function(size){
+				size += 1;
+				var man_big_box = document.createElement('div');
+				for(var r=1;r<=size;r++){					
+					var row = document.createElement('div');
+					for(var c=1;c<=size;c++){
+						this.clickBox(row, r, c);
+					}					
+					man_big_box.appendChild(row);
+					row.setAttribute('row',r);
+					row.setAttribute('class','row');
+				}
+				this.BoxDom.appendChild(man_big_box);
+				man_big_box.setAttribute('id','big_box');
+			}
+
+			this.createMatchBox = function(){
+				var match_box = document.createElement('div');
+				this.BoxDom.appendChild(match_box);
+				match_box.setAttribute('id','wait-match');
+				match_box.innerHTML = '正在匹配对手...';
+				match_box.style.display = 'none';
+				document.getElementById('while-user').innerHTML = '';
+				document.getElementById('black-user').innerHTML = '';
+			}
+
+			this.showMatchBox = function(){
+				var match_box = document.getElementById('wait-match');
+				match_box.style.display = 'block';
+			}
+			this.hideMatchBox = function(){
+				var match_box = document.getElementById('wait-match');
+				match_box.style.display = 'none';
+			}
+
+			this.createToolbar = function(){
+				var toolbar = document.createElement('div');
+				this.BoxDom.appendChild(toolbar);
+				toolbar.setAttribute('id','toolbar');				
+				this.createGameUser(toolbar);
+				this.createUndoButton(toolbar);
+				
+			}
+
+			this.createGameUser = function(toolbar){
+				var game = document.createElement('div');
+
+				var man_while = document.createElement('div');
+				game.appendChild(man_while);
+				man_while.setAttribute('class','man while');
+				var man_while_user = document.createElement('span');
+				game.appendChild(man_while_user);
+				man_while_user.setAttribute('id','while-user');
+				// man_while_user.innerHTML = "这是你";
+
+				var man_black = document.createElement('div');
+				game.appendChild(man_black);
+				man_black.setAttribute('class','man black');
+				var man_black_user = document.createElement('span');
+				game.appendChild(man_black_user);
+				man_black_user.setAttribute('id','black-user');
+				// man_black_user.innerHTML = "你的对手";
+
+				toolbar.appendChild(game);
+				game.setAttribute('id','game');
+			}
+
+			this.createUndoButton = function(toolbar){
+				//悔棋按钮
+				var undo = document.createElement('button');
+				toolbar.appendChild(undo);
+				undo.setAttribute('id','btn-undo');
+				undo.setAttribute('class','button button-raised button-pill');
+				
+				undo.setAttribute('step',this.undo_count);
+				undo.innerHTML = '悔棋('+this.undo_count+')';
+
+				//悔棋事件
+				undo.onclick = function(){
+					if(!_this.undo_count){
+						if(confirm('是否重新开始?')){
+							_this.undo_count = 5;
+							_this.restart();
+						}
+						return;
+					}
+					if(_this.all_man.length){
+						_this.undo_count--;
+						var last = _this.all_man.pop();
+						var type = last[2];
+						// _this.curr_man = type == 1 ? 2 : 1;
+						_this.repaint();
+						undo.setAttribute('step',_this.undo_count);
+						undo.innerHTML = '悔棋('+_this.undo_count+')';
+					}
+				}
+			}
+
+			this.clickBox = function(row, r, c){
+				var cell = document.createElement('div');
+				row.appendChild(cell);
+				cell.setAttribute('id',r+'-'+c);
+				cell.setAttribute('class','cell');
+				cell.onclick = function(){
+					// _this.createMan(_this.curr_man, cell);
+					if(_this.curr_step_man == _this.curr_man){
+						alert('等待对方下子');
+						return;
+					}
+					_this.all_man.push([r,c,_this.curr_man]);
+					_this.ws.send([r,c,_this.curr_man]);
+					// _this.curr_man = _this.curr_man == 1 ? 2 : 1;
+				}
+			}
+
+			this.createMan = function(type, man_box){
+				console.log('create man');
+				var man_name = type==1 ? 'while' : 'black';
+				var is_man = man_box.getAttribute('man');
+
+				if(!is_man){
+					var man = document.createElement('div');
+					man_box.appendChild(man);
+					man.setAttribute("class",'man '+ man_name);
+					man_box.setAttribute('man',type);
+					var _class = man_box.getAttribute('class');
+					this.clearActive()
+					man_box.setAttribute('class', _class + ' active');
+					var id = man_box.getAttribute('id').split('-');
+					var row = id[0];
+					var col = id[1];
+					this.isWin(row,col,type);
+				}
+			}
+
+			this.isWin = function(row,col,type){
+				row = parseInt(row);
+				col = parseInt(col);
+				if(this.horizontal(row,col,type)) return;
+				if(this.vertical(row,col,type)) return;
+				if(this.LeftOblique(row,col,type)) return;
+				if(this.RightOblique(row,col,type)) return;
+			}
+
+			this.horizontal = function(row,col,type){
+				var counter = 1;
+				//水平方向
+				//右半部分
+				for(var i=col+1;i<=col+4 && i<=this.size+1;i++){
+					var id = row +'-'+ i;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				//左半部分
+				for(var i=col-1;i>=col-4 && i>=1;i--){
+					var id = row +'-'+ i;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				if(counter>=5){
+					if(type == 1){
+						alert("白棋赢");
+					}else if(type == 2){
+						alert("黑棋赢");
+					}
+					this.restart();
+					return true;
+				}
+				return false;
+			}
+
+			this.vertical = function(row,col,type){
+				var counter = 1;
+				//垂直方向
+				//下半部分
+				for(var i=row+1;i<=row+4&&i<=this.size+1;i++){
+					var id = i +'-'+ col;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				//上半部分
+				for(var i=row-1;i>=row-4&&i>=1;i--){
+					var id = i +'-'+ col;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				if(counter>=5){
+					if(type == 1){
+						alert("白棋赢");
+					}else if(type == 2){
+						alert("黑棋赢");
+					}
+					this.restart();
+					return true;
+				}
+				return false;
+			}
+
+			this.LeftOblique = function(row,col,type){
+				var counter = 1;
+				//左斜方向
+				//上半部分
+				for(var i=row-1,j=col+1;(i>=row-4 || j<=j+4) && i>=1 && j<=this.size+1;i--,j++){
+					var id = i +'-'+ j;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				//下半部分
+				for(var i=row+1,j=col-1;(i<=row+4 || j>=j-4) && i<=this.size+1 && j>=1;i++,j--){
+					var id = i +'-'+ j;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				if(counter>=5){
+					if(type == 1){
+						alert("白棋赢");
+					}else if(type == 2){
+						alert("黑棋赢");
+					}
+					this.restart();
+					return true;
+				}
+				return false;
+			}
+
+			this.RightOblique = function(row,col,type){
+				var counter = 1;
+				//右斜方向
+				
+				//上半部分
+				for(var i=row-1,j=col-1;(i>=row-4 || j>=j-4) && i>=1 && j>=1;i--,j--){
+					var id = i +'-'+ j;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				//下半部分
+				for(var i=row+1,j=col+1;(i<=row+4 || j<=j+4) && i<=this.size+1 && j<=this.size+1;i++,j++){
+					var id = i +'-'+ j;
+					var man_type = document.getElementById(id).getAttribute('man');
+					if(man_type == type){
+						counter++;
+					}else{
+						break;
+					}
+				}
+				if(counter>=5){
+					if(type == 1){
+						alert("白棋赢");
+					}else if(type == 2){
+						alert("黑棋赢");
+					}
+					this.restart();
+					return true;
+				}
+				return false;
+			}
+
+			this.isMan = function(row,col){
+				var id = row +'-'+ col;
+				var man_box = document.getElementById(id);
+				if(man_box.getAttribute('man')) return true;
+				return false;
+			}
+
+			this.restart = function(){
+				this.BoxDom.removeChild(document.getElementById('big_box'));
+				document.getElementById('toolbar').removeChild(document.getElementById('btn-undo'));
+				this.undo_count = 5;
+				this.createManBox(this.size);
+				this.createUndoButton(document.getElementById('toolbar'));
+			}
+
+			this.rematch = function(){
+				this.undo_count = 5;
+				this.BoxDom.removeChild(document.getElementById('big_box'));
+				this.BoxDom.removeChild(document.getElementById('toolbar'));
+				this.BoxDom.removeChild(document.getElementById('wait-match'));
+				this.createManBox(this.size);
+				this.createToolbar();
+				this.createMatchBox();
+				this.showMatchBox();
+			}
+
+			this.clearActive = function(){
+				var big_box = document.getElementById('big_box');
+				var rows = big_box.getElementsByTagName('div');
+				for(var i=0;i<rows.length;i++){
+					var _class = rows[i].getAttribute('class');
+					
+					if(_class.indexOf('cell') != -1){
+						rows[i].setAttribute('class','cell');						
+					}
+				}
+			}
+
+			this.repaint = function(){
+				var all_man = this.all_man;
+				this.restart();
+				for(var i=0;i<all_man.length;i++){
+					var man = all_man[i];
+					var row = man[0];
+					var col = man[1];
+					var type = man[2];
+					var id = row +'-'+ col;
+					var man_box = document.getElementById(id);
+					this.createMan(type,man_box);
+					this.all_man.push([row,col,type]);
+				}
+			}
+		}
+	</script>
+</head>
+<body>
+	<div id="C"></div>
+	<script type="text/javascript">
+		var chess;
+		var wsServer = 'ws://127.0.0.1:8888'; 
+		var ws = new WebSocket(wsServer);
+		var isConnect = false;
+		ws.onopen = function (evt) { onOpen(evt) }; 
+		ws.onclose = function (evt) { onClose(evt) }; 
+		ws.onmessage = function (evt) { onMessage(evt) }; 
+		ws.onerror = function (evt) { onError(evt) }; 
+		function onOpen(evt) { 
+			console.log("连接服务器成功");
+			isConnect = true;
+			chess = new Chess;
+			chess.init(5,ws);
+			chess.createMatchBox();
+			chess.showMatchBox();
+		} 
+		function onClose(evt) { 
+			console.log("Disconnected"); 
+			alert('网络故障');
+		} 
+		function onMessage(evt) {
+			console.log('Retrieved data from server: ' + evt.data);
+			if(!evt.data) return;
+			var data = JSON.parse(evt.data);
+			var msg = data.msg;
+			switch (data.type) {
+				case 'text':
+					if(msg){
+						var man_ar = msg.split(',');
+						var man_box = document.getElementById(man_ar[0]+'-'+man_ar[1]);
+						chess.createMan(man_ar[2],man_box);
+						chess.curr_step_man = man_ar[2];
+					}
+					
+				break;
+				case 'match':
+					if(msg){
+						var index = msg[0];
+						var match = msg[1];
+						var man_type = msg[2];
+
+						chess.setManColor(man_type);
+
+						if(man_type==1){
+							//while
+							document.getElementById('while-user').innerHTML = '你：'+ index;
+							document.getElementById('black-user').innerHTML = '对手：'+ match;
+						}else if(man_type==2){
+							//black
+							document.getElementById('black-user').innerHTML = '你：'+ index;
+							document.getElementById('while-user').innerHTML = '对手：'+ match;
+						}
+
+						chess.hideMatchBox();
+					}
+				break;
+				case 'close':
+					alert('你的对手 '+msg+ ' 离开了，等待重新匹配对手');
+					chess.restart();
+					chess.createMatchBox();
+					chess.showMatchBox();
+				break;
+				case 'num' :
+					// updataUserNum(data.msg);
+				break;
+			}
+		}
+		function onError(evt) { 
+			console.log('Error occured: ' + evt.data); 
+		}
+		function sendMsg() {
+			if(isConnect){
+				ws.send([[1,2,1],[1,3,2]]);
+			}
+		}
+	</script>
+</body>
+</html>
